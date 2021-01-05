@@ -1,66 +1,51 @@
 import random
-import sys
+from hangman_stages import stages
 win = 0
 loss = 0
 
-def start():
-    print("Welcome to the game of Hangman!")
-    
-    while True:
-        choice = input("Are you ready to begin? (Y/N): ").lower()
-        if choice == 'y':
-            word = get_word()
-            guess_word(word)
-        if choice == 'n':
-            print("Goodbye!")
-            sys.exit(0)
-        else:
-            print("Invalid input. Please try again.")
-
 def get_word():
-    easy_words = ["cat", "dog", "bomb", "sun", "rain", 
-                  "heart", "key", "hotdog", "study", "oil",
-                   "music", "sing", "cry", "lose", "laugh",
-                   "dinner", "cloud", "water", "ice", "fire"]
+    with open('wordlist.txt') as words_file:
+        word_list = words_file.read().splitlines()
+    
+    easy_words = []
+    medium_words = []
+    hard_words = []
 
-    medium_words = ["photograph", "lightsaber", "lawnmower", "gingerbread", "platypus",
-                    "project", "dominoes", "helicopter", "pyramid", "stonehenge",
-                    "assignment", "stockholder", "quarantine", "flotsam", "psycho",
-                    "loiterer", "kilogram", "blacksmith", "stowaway", "addendum"]
-
-    hard_words = ["juandice", "intelligence ", "unimaginatively ", "uncopyrightable ", "mississippi",
-                  "pronunciation", "chiaroscurist", "sacrilegious", "accommodation", "gubernatorial",
-                  "onomatopoeia", "paraphernalia", "psychotomimetic", "introduction", "accumulation",
-                  "trichotillomania", "superintendent", "strikebreaker", "constellation", "civilization"]
+    for word in word_list:
+        if len(word) < 6:
+            easy_words.append(word)
+        elif len(word) < 12:
+            medium_words.append(word)
+        else:
+            hard_words.append(word)
 
     while True:
         difficulty = input("Difficulty (Easy/Medium/Hard): ").lower()
         if difficulty == "easy":
             return random.choice(easy_words)
-        
+
         if difficulty == "medium":
             return random.choice(medium_words)
 
         if difficulty == "hard":
             return random.choice(hard_words)
-        else:
-            print("Invalid input. Please try again.")
 
-def guess_word(word_choice):
+
+def game(word_choice):
     enable_hint = input('Do you want to enable hints? (Y/N): ').lower()
     if enable_hint == 'y':
         hint_check = True
     else:
         hint_check = False
 
-    global win
-    global loss
-    word_letters = [char for char in word_choice]
+    global win, loss
+    mistake_count = 0
+    hint_used = 0
     display_answer = []
     used_letters = []
+    word_letters = [letters for letters in word_choice]
     display_str = ''
     used = ', '
-    mistake_count = 0
 
     for i in range(len(word_letters)):
         placeholder = ' _ '
@@ -70,14 +55,14 @@ def guess_word(word_choice):
     while True:
         answer = input("\nGuess a letter: ").lower()
         if answer not in 'abcdefghijklmnopqrstuvwxyz':
-            print("It must be a letter, try again.")
+            print("Invalid input, it must be a letter. Please try again.")
 
         if answer in 'abcdefghijklmnopqrstuvwxyz':
             if answer in word_letters:
-                print("That's the right letter.")
+                print("Correct! That's the right letter.")
                 used_letters.append(answer)
             else:
-                print("That's the wrong letter.")
+                print("Wrong! That's the incorrect letter.")
                 used_letters.append(answer)
                 mistake_count += 1
 
@@ -97,45 +82,48 @@ def guess_word(word_choice):
                 win += 1
                 play_again = input('Do you want to go again? (Y/N): ').lower()
                 if play_again == 'y':
-                    start()
+                    word = get_word()
+                    game(word)
                 else:
                     print("Win:", win)
                     print("Loss:", loss)
-                    sys.exit(0)
+                    break
 
         if mistake_count == 1:
-            print(gallows_stages[1])
+            print(stages[1])
 
-        if mistake_count == 2:
-            print(gallows_stages[2])
+        elif mistake_count == 2:
+            print(stages[2])
 
-        if mistake_count == 3:
-            print(gallows_stages[3])
+        elif mistake_count == 3:
+            print(stages[3])
 
-        if mistake_count == 4:
-            print(gallows_stages[4])
+        elif mistake_count == 4:
+            print(stages[4])
 
-        if mistake_count == 5:
-            print(gallows_stages[5])
+        elif mistake_count == 5:
+            print(stages[5])
 
-        if mistake_count == 6:
-            print(gallows_stages[6])
+        else:
+            print(stages[6])
             loss += 1
             print("Game over! You've been hanged!")
             print("The correct word was", word_choice + ".")
             play_again = input('Do you want to try again? (Y/N): ').lower()
             if play_again == 'y':
-                start()
+                word = get_word()
+                game(word)
             else:
                 print("Win:", win)
                 print("Loss:", loss)
-                sys.exit(0)
+                break
 
         if hint_check:
             get_hint(word_choice)
 
 def get_hint(word_choice):
-    random_letter = random.choice(word_choice)
+    word_letters = [letters for letters in word_choice]
+    random_letter = random.choice(word_letters)
     while True:
         hint = input("Need a hint? (Y/N): ").lower()
         if hint == 'y':
@@ -147,65 +135,13 @@ def get_hint(word_choice):
             print("You have chosen to not use a hint.")
             break
 
-gallows_stages = [
-        """
-        _______  
-        |     |  
-        |        
-        |                   
-        |        
-       _|________
-        """,
-        """
-        _______  
-        |     |  
-        |     O  
-        |        
-        |        
-       _|________
-        """,
-        """
-        _______  
-        |     |  
-        |     O  
-        |     |  
-        |        
-       _|________
-        """,
-        """
-        _______  
-        |     |  
-        |     O  
-        |    /|  
-        |        
-       _|________
-        """,
-        """
-        _______  
-        |     |  
-        |     O  
-        |    /|\  
-        |        
-       _|________
-        """,
-        """
-        _______  
-        |     |  
-        |     O  
-        |    /|\  
-        |    /  
-       _|________
-        """,
-        """
-        _______  
-        |     |  
-        |     O  
-        |    /|\  
-        |    / \ 
-       _|________
-        """
-    ]
-
-
 if __name__ == '__main__':
-    start()
+    print("Welcome to the game of Hangman!")
+    while True:
+        choice = input("Are you ready to begin? (Y/N): ").lower()
+        if choice == 'y':
+            word = get_word()
+            game(word)
+        if choice == 'n':
+            print("Goodbye!")
+            break
