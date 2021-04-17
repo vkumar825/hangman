@@ -136,6 +136,7 @@ def get_hint(word_choice):
             break
 
 if __name__ == '__main__':
+    # testing git
     print("Welcome to the game of Hangman!")
     while True:
         choice = input("Are you ready to begin? (Y/N): ").lower()
